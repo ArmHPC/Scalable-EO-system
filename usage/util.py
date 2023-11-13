@@ -10,17 +10,18 @@ def convert_bounds(bbox, invert_y=False):
         y1, y2 = y2, y1
     return ((y1, x1), (y2, x2))
 
-def visualize(meta_file_name):
+def visualize(meta_file_name, show_query=True):
   map = folium.Map()
   with open(meta_file_name, encoding = 'utf-8') as f:
     data = json.loads(f.read())
   for i, im in enumerate(data):
     bbox = im.get('bbox')
-    folium.GeoJson(
-      shapely.geometry.box(*bbox),
-      style_function=lambda x: dict(fill=True, weight=2, opacity=0.8, color="blue"),
-      name=f"Query_{i}",
-    ).add_to(map)
+    if show_query:
+        folium.GeoJson(
+          shapely.geometry.box(*bbox),
+          style_function=lambda x: dict(fill=True, weight=2, opacity=0.8, color="blue"),
+          name=f"Query_{i}",
+        ).add_to(map)
 
     image_bounds = convert_bounds(bbox, invert_y=True)
     img = plt.imread(im.get('filename'), format='jpg')
@@ -39,9 +40,9 @@ def visualize(meta_file_name):
   folium.LayerControl().add_to(map)
   return map
 
-def show_legend():
+def show_legend(cmap_name):
     fig, ax = plt.subplots(figsize=(20, 0.5))
-    cmap = plt.cm.RdYlGn
+    cmap=plt.cm.get_cmap(cmap_name)
     values = np.linspace(-1, 1, 256).reshape(1, -1)
     img = ax.imshow(values, cmap=cmap, aspect='auto')
     ax.set_axis_off()
